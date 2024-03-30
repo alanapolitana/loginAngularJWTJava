@@ -23,14 +23,13 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
 
     public AuthResponse login(LoginRequest request) {
-        authenticationManager
-                .authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
         UserDetails user = userRepository.findByUsername(request.getUsername()).orElseThrow();
         String token = jwtService.getToken(user);
         return AuthResponse.builder()
                 .token(token)
+                .role(user.getAuthorities().iterator().next().getAuthority()) // Obtener el rol del usuario autenticado
                 .build();
-
     }
 
     public AuthResponse register(RegisterRequest request) {
@@ -38,30 +37,25 @@ public class AuthService {
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .firstname(request.getFirstname())
-                .lastname(request.lastname)
+                .lastname(request.getLastname())
                 .country(request.getCountry())
-                .role(AsignarRole(request.getUsername()))
-
                 .build();
 
-        userRepository.save(user);
+        // Asignar el rol después de crear el usuario
+        user.setRole(asignarRole(request.getUsername()));
+        userRepository.save(user); // Guardar usuario con el rol asignado
 
         return AuthResponse.builder()
                 .token(jwtService.getToken(user))
+                .role(user.getRole().toString()) // Obtener el rol asignado
                 .build();
-
     }
 
-    private Role AsignarRole(String username) {
-
-        if (this.userRepository.findByUsername(username) == null) {
-            return null;
+    private Role asignarRole(String username) {
+        if ("admin@admin.com".equals(username)) {
+            return Role.ADMIN;
         } else {
-            if (username.equals("admin@admin.com")) {
-                return Role.ADMIN;
-            } else {
-                return Role.USER;
-            }
+            return Role.USER;
         }
     }
 }

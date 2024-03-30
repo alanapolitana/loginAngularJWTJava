@@ -8,7 +8,7 @@ import { AdminDashboardComponent } from './pages/admin-dashboard/admin-dashboard
 const routes: Routes = [
   {path:'',redirectTo:'/inicio', pathMatch:'full'},
   {path:'inicio',component:DashboardComponent},
-
+  { path: 'dashboard', component: DashboardComponent },
   {path:'iniciar-sesion',component:LoginComponent},
    {path: 'admin-dashboard', component: AdminDashboardComponent}, 
 ];
